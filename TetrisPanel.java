@@ -8,14 +8,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-
-import javax.swing.JButton;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.Timer;
-import javax.xml.soap.Text;
+
 
 
 public class TetrisPanel extends JPanel
@@ -25,8 +22,6 @@ public class TetrisPanel extends JPanel
 
 	public TetrisPanel()
 	{
-
-
 		Font font= new Font("Arial",Font.PLAIN,20);
 		instructions = new JLabel("To start/pause playing press space", SwingConstants.CENTER );
 		instructions.setFont(font);
@@ -37,10 +32,6 @@ public class TetrisPanel extends JPanel
 
 		Play p = new Play();
 		up = new JPanel();
-
-		this.requestFocusInWindow();
-		this.addKeyListener(p);
-		this.setFocusable(true);
 		up.setLayout(new BorderLayout());
 		up.add(instructions, BorderLayout.CENTER);
 		up.add(tetris, BorderLayout.NORTH);
@@ -54,7 +45,7 @@ public class TetrisPanel extends JPanel
 	private class Play extends JPanel implements ActionListener, KeyListener
 	{
 		private int SIZE = 20, widthNum = 10, heightNum = 22;
-		private int pWidth, pHeight, i,j, height, width, x, y, startPoint;
+		private int pWidth, pHeight, i,j, height, width, x, y, startPoint, speed;
 		private int[][] board;
 		private Timer timer;
 		private Board gameBoard;
@@ -66,9 +57,13 @@ public class TetrisPanel extends JPanel
 			super();
 			gameBoard = new Board(widthNum, heightNum);
 			board = gameBoard.getBoard();
-			timer = new Timer(400, this);
+			speed = 400;
+			timer = new Timer(speed, this);
 			this.running = false;
 			startGame = true;
+			this.requestFocusInWindow();
+			this.addKeyListener(this);
+			this.setFocusable(true);
 
 		}
 
@@ -140,7 +135,6 @@ public class TetrisPanel extends JPanel
 			else
 			{
 				timer.stop();
-				//JOptionPane.showMessageDialog(null, "Game Over!", "", JOptionPane.INFORMATION_MESSAGE);
 			}
 
 		}
@@ -148,9 +142,10 @@ public class TetrisPanel extends JPanel
 		{
 			if(gameBoard.getGameOver()) // Start over the game
 			{
+				speed = 400;
 				gameBoard = new Board(widthNum, heightNum);
 				board = gameBoard.getBoard();
-				timer = new Timer(400, this);
+				timer = new Timer(speed, this);
 				this.running = false;
 				startGame = true;
 			}
@@ -172,7 +167,7 @@ public class TetrisPanel extends JPanel
 		{
 			super.paintComponent(g);
 			Graphics2D g2d = (Graphics2D) g;
-
+			
 			//Define variables
 			pWidth = this.getWidth();
 			pHeight = this.getHeight();
@@ -204,9 +199,30 @@ public class TetrisPanel extends JPanel
 			//Draw all information about the game - level, score, next shape
 			drawInformation(g2d);
 			if(gameBoard.getGameOver())
-				drawGameOver(g2d);
+				drawMessage(g2d, "Game Over");
+			else if(!running && !startGame)
+				drawMessage(g2d, "Pause");
+	
 			if(gameBoard.getWasErase())
+			{
+				timer.stop();
+				this.removeKeyListener(this);
+				running = false;
 				eraseEffect(g2d);
+				running = true;
+				this.addKeyListener(this);
+				timer.start();
+			}
+			if(gameBoard.getLevelUp())
+			{
+				timer.stop();
+				drawMessage(g2d, "Level Up");
+				gameBoard.setLevelUp(false);
+				if(speed > 100)
+					speed -= 20*gameBoard.getLevel();
+				timer = new Timer(speed, this);
+				timer.start();
+			}
 
 
 		}
@@ -268,15 +284,16 @@ public class TetrisPanel extends JPanel
 		}
 
 
-		public void drawGameOver(Graphics2D g2d)
+		public void drawMessage(Graphics2D g2d, String s)
 		{
 			int widthR = 100, heightR = 30;
 			g2d.setColor(new Color(176, 163, 255, 180));
 			g2d.fillRoundRect(x + (width-widthR)/2, y - height + 20, widthR, heightR, 15, 15);
 			Font font = new Font("Serif", Font.PLAIN, 18);
 			g2d.setFont(font);
+			FontMetrics fm = g2d.getFontMetrics();
 			g2d.setColor(new Color(0,0,0, 140));
-			g2d.drawString("Game Over",x + (width-widthR)/2 +6, y - height + 40);
+			g2d.drawString(s,x + (width-fm.stringWidth(s))/2, y - height + 40);
 
 		}
 
@@ -285,8 +302,9 @@ public class TetrisPanel extends JPanel
 			int[] lines, arr;
 			Color squareColor;
 			int k;
+			System.out.println("Starting erase effect");
 			lines = gameBoard.getErasedLines();
-			for(k =0; k< 5; k++)
+			for(k =0; k< 25; k++)
 			{
 				for(i=0;i<4;i++)
 				{
@@ -294,22 +312,30 @@ public class TetrisPanel extends JPanel
 					{
 						for(j=0; j<widthNum; j++)
 						{
-							//board[i][lines[i]];
 							arr = getColor(board[j][lines[i]]);
-							squareColor = new Color(arr[0],arr[1],arr[2], 255 - i*50);
+							if(arr.length != 0)
+							{
+							squareColor = new Color(arr[0],arr[1],arr[2], 255 - k*10);
+							squareColor.brighter();
 							g2d.setColor(squareColor.darker());
-							g2d.fillRect(x, y - SIZE, SIZE, SIZE);
+							g2d.fillRect(x+j*SIZE, y - SIZE*lines[i] - SIZE, SIZE, SIZE);
 							g2d.setColor(squareColor);
-							g2d.fillRect(x + 1, y - SIZE+1, SIZE-3, SIZE-3);
+							g2d.fillRect(x+j*SIZE + 1, y - SIZE*lines[i] - SIZE +1, SIZE-3, SIZE-3);
+							}
 						}
 					}
 				}
-			    try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
+
+			}
+			for(i=3;i>=0;i--)
+			{
+				if(lines[i]!= -1)
+				{
+					gameBoard.eraseLine(lines[i]);
 				}
 			}
+			System.out.println("finishing erase effect");
+	
 		}
 
 

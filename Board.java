@@ -4,11 +4,11 @@ import java.util.Random;
 public class Board 
 {
 	// -------------    Variables definition   -------------------
-	private int cols, rows, oldX, oldY, cs, ns, x, y, score, linesCounter, level;
+	private int cols, rows, oldX, oldY, cs, ns, x, y, score, linesCounter, level, strike;
 	private int[][] board, s;
 	private Random randomGenerator; //To create random shape
 	private Shape currentShape;
-	private boolean stop = false, first = true, gameOver, wasErase;
+	private boolean stop = false, first = true, gameOver, wasErase, levelUp;
 	private int[] erasedLines = {-1,-1,-1,-1};
 
 	public Board(int cols, int rows)
@@ -20,6 +20,7 @@ public class Board
 		this.level = 1;
 		this.gameOver = false;
 		this.wasErase = false;
+		this.levelUp = false;
 	}
 
 	//Function to create new random shape 
@@ -52,7 +53,9 @@ public class Board
 
 	public void update()
 	{
-		int fullLine;
+		int i;
+		wasErase = false;
+
 		if(!gameOver)
 		{
 			if(!stop) //If shape should move
@@ -76,19 +79,28 @@ public class Board
 			}
 			else //If shape arrived to last destination - create new shape and check if need to erase line
 			{
-				for(int i =0;i<4 ;i++)
+				for(i =0;i<4 ;i++)
 					erasedLines[i] = -1;
+				i = 0;
 				linesCounter = -1;
-				fullLine = isFullLine(); // Check if there is full line
-				while(fullLine != -1)
+				findFullLines(); // Check if there are full lines
+
+				for(i =0;i<4 ;i++)
 				{
-					wasErase = true;
-					linesCounter ++;
-					erasedLines[linesCounter] = fullLine;
-					//eraseLine(fullLine); //If yes, erase it
-					fullLine = isFullLine(); // Check if there is full line again =)
+					if(erasedLines[i] != -1)
+					{
+						linesCounter ++;
+						wasErase = true;
+					}
+
 				}
+				if(linesCounter == -1)
+					strike = -1;
+				else
+					strike++;
 				updateScore(linesCounter);
+				score ++;
+				updateLevel();
 				createNewShape();		
 			}
 		}
@@ -199,11 +211,11 @@ public class Board
 
 	}
 
-	private int isFullLine()
+	private void findFullLines()
 	{
 		boolean full = true;
 		int i, j;
-		int lineNum = -1;
+		int k=0;
 
 		for(j=0; j<rows;j++)
 		{
@@ -214,12 +226,14 @@ public class Board
 					full = false;
 			}
 			if(full == true)
-				return j;
+			{
+				erasedLines[k] = j;
+				k++;
+			}
 		}
-		return lineNum;
 	}
 
-	private void eraseLine(int lineNum)
+	public void eraseLine(int lineNum)
 	{
 		int i, j;
 
@@ -244,13 +258,23 @@ public class Board
 	private void updateScore(int linesCounter)
 	{
 		if(linesCounter != -1)
-			score += Math.pow(2,linesCounter)*100; 
+			score += (Math.pow(2,linesCounter)*100)+level*strike*50; 
+	}
+	
+	private void updateLevel()
+	{
+		if(score > Math.pow(2, (level-1))*1000)
+		{
+				level ++;
+				levelUp = true;
+		}
 	}
 
 	//---------------- Shape moves -------------------
 	public void moveDown()
 	{
-		y--;
+		if(!stop)
+			y--;
 	}
 
 	public void moveLeft()
@@ -289,7 +313,7 @@ public class Board
 	{
 		return gameOver;
 	}
-	
+
 	public int[] getErasedLines()
 	{
 		return erasedLines;
@@ -297,5 +321,17 @@ public class Board
 	public boolean getWasErase()
 	{
 		return wasErase;
+	}
+	public boolean getStop()
+	{
+		return stop;
+	}
+	public boolean getLevelUp()
+	{
+		return levelUp;
+	}
+	public void setLevelUp(boolean t)
+	{
+		levelUp = t;
 	}
 }
