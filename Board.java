@@ -260,13 +260,13 @@ public class Board
 		if(linesCounter != -1)
 			score += (Math.pow(2,linesCounter)*100)+level*strike*50; 
 	}
-	
+
 	private void updateLevel()
 	{
 		if(score > Math.pow(2, (level-1))*1000)
 		{
-				level ++;
-				levelUp = true;
+			level ++;
+			levelUp = true;
 		}
 	}
 

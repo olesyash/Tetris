@@ -73,7 +73,7 @@ public class TetrisPanel extends JPanel
 		{	
 			if(!gameBoard.getGameOver())
 			{
-				if(running)
+				if(running&&!gameBoard.getWasErase()&&!gameBoard.getLevelUp())
 				{
 					// Pressed arrow up
 					if (event.getKeyCode() == KeyEvent.VK_UP)
@@ -99,9 +99,9 @@ public class TetrisPanel extends JPanel
 						running = false;
 						timer.stop();
 					}
+					gameBoard.update(); 
 
-					gameBoard.update();
-					repaint();
+					repaint();			
 				}
 				else
 				{
@@ -130,7 +130,6 @@ public class TetrisPanel extends JPanel
 				gameBoard.moveDown();
 				gameBoard.update();
 				repaint();
-
 			}
 			else
 			{
@@ -167,7 +166,7 @@ public class TetrisPanel extends JPanel
 		{
 			super.paintComponent(g);
 			Graphics2D g2d = (Graphics2D) g;
-			
+
 			//Define variables
 			pWidth = this.getWidth();
 			pHeight = this.getHeight();
@@ -202,16 +201,14 @@ public class TetrisPanel extends JPanel
 				drawMessage(g2d, "Game Over");
 			else if(!running && !startGame)
 				drawMessage(g2d, "Pause");
-	
+
 			if(gameBoard.getWasErase())
 			{
 				timer.stop();
 				this.removeKeyListener(this);
-				running = false;
 				eraseEffect(g2d);
-				running = true;
-				this.addKeyListener(this);
 				timer.start();
+				this.addKeyListener(this);
 			}
 			if(gameBoard.getLevelUp())
 			{
@@ -223,8 +220,6 @@ public class TetrisPanel extends JPanel
 				timer = new Timer(speed, this);
 				timer.start();
 			}
-
-
 		}
 
 
@@ -302,6 +297,7 @@ public class TetrisPanel extends JPanel
 			int[] lines, arr;
 			Color squareColor;
 			int k;
+			System.out.println("running? "+running);
 			System.out.println("Starting erase effect");
 			lines = gameBoard.getErasedLines();
 			for(k =0; k< 25; k++)
@@ -315,12 +311,12 @@ public class TetrisPanel extends JPanel
 							arr = getColor(board[j][lines[i]]);
 							if(arr.length != 0)
 							{
-							squareColor = new Color(arr[0],arr[1],arr[2], 255 - k*10);
-							squareColor.brighter();
-							g2d.setColor(squareColor.darker());
-							g2d.fillRect(x+j*SIZE, y - SIZE*lines[i] - SIZE, SIZE, SIZE);
-							g2d.setColor(squareColor);
-							g2d.fillRect(x+j*SIZE + 1, y - SIZE*lines[i] - SIZE +1, SIZE-3, SIZE-3);
+								squareColor = new Color(arr[0],arr[1],arr[2], 255 - k*10);
+								squareColor.brighter();
+								g2d.setColor(squareColor.darker());
+								g2d.fillRect(x+j*SIZE, y - SIZE*lines[i] - SIZE, SIZE, SIZE);
+								g2d.setColor(squareColor);
+								g2d.fillRect(x+j*SIZE + 1, y - SIZE*lines[i] - SIZE +1, SIZE-3, SIZE-3);
 							}
 						}
 					}
@@ -335,7 +331,7 @@ public class TetrisPanel extends JPanel
 				}
 			}
 			System.out.println("finishing erase effect");
-	
+
 		}
 
 
