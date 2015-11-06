@@ -14,7 +14,6 @@ import javax.swing.SwingConstants;
 import javax.swing.Timer;
 
 
-
 public class TetrisPanel extends JPanel
 {
 	private JLabel instructions, tetris;
@@ -22,6 +21,7 @@ public class TetrisPanel extends JPanel
 
 	public TetrisPanel()
 	{
+		//Add title and instructions panels
 		Font font= new Font("Arial",Font.PLAIN,20);
 		instructions = new JLabel("To start/pause playing press space", SwingConstants.CENTER );
 		instructions.setFont(font);
@@ -30,6 +30,7 @@ public class TetrisPanel extends JPanel
 		tetris = new JLabel("Tetris", SwingConstants.CENTER );
 		tetris.setFont(new Font("Algerian",Font.PLAIN,40));
 
+		//Add game panel and arrange all panels 
 		Play p = new Play();
 		up = new JPanel();
 		up.setLayout(new BorderLayout());
@@ -71,48 +72,39 @@ public class TetrisPanel extends JPanel
 		public void keyReleased(KeyEvent e) {}
 		public void keyPressed(KeyEvent event) 
 		{	
-			if(!gameBoard.getGameOver())
+			if(running&&!gameBoard.getWasErase()&&!gameBoard.getLevelUp())
 			{
-				if(running&&!gameBoard.getWasErase()&&!gameBoard.getLevelUp())
+				// Pressed arrow up
+				if (event.getKeyCode() == KeyEvent.VK_UP)
 				{
-					// Pressed arrow up
-					if (event.getKeyCode() == KeyEvent.VK_UP)
-					{
-						gameBoard.rotate();
-					}
-					// Pressed arrow left
-					else if (event.getKeyCode() == KeyEvent.VK_LEFT)
-					{
-						gameBoard.moveLeft();
-					}
-					// Pressed arrow right
-					else if (event.getKeyCode() == KeyEvent.VK_RIGHT)
-					{
-						gameBoard.moveRight();
-					}
-					else if (event.getKeyCode() == KeyEvent.VK_DOWN)
-					{
-						gameBoard.moveDown();
-					}
-					else if(event.getKeyCode() == KeyEvent.VK_SPACE)
-					{
-						running = false;
-						timer.stop();
-					}
-					gameBoard.update(); 
-
-					repaint();			
+					gameBoard.rotate();
 				}
-				else
+				// Pressed arrow left
+				else if (event.getKeyCode() == KeyEvent.VK_LEFT)
 				{
-					if(event.getKeyCode() == KeyEvent.VK_SPACE)
-					{
-						start();
-					}
+					gameBoard.moveLeft();
 				}
+				// Pressed arrow right
+				else if (event.getKeyCode() == KeyEvent.VK_RIGHT)
+				{
+					gameBoard.moveRight();
+				}
+				// Pressed arrow down
+				else if (event.getKeyCode() == KeyEvent.VK_DOWN)
+				{
+					gameBoard.moveDown();
+				}
+				// Pressed space - pause the game
+				else if(event.getKeyCode() == KeyEvent.VK_SPACE)
+				{
+					running = false;
+					timer.stop();
+				}
+				gameBoard.update(); 
 
+				repaint();			
 			}
-			else
+			else //pressed space - resume the game
 			{
 				if(event.getKeyCode() == KeyEvent.VK_SPACE)
 				{
@@ -120,23 +112,24 @@ public class TetrisPanel extends JPanel
 				}
 			}
 
-		}
 
+		}
 
 		public void actionPerformed(ActionEvent arg0)
 		{
-			if(!gameBoard.getGameOver())
+			if(gameBoard.getGameOver()) // Check if loose - stop the game
+			{
+				running = false;
+				timer.stop();
+			}
+			else // keep playing
 			{
 				gameBoard.moveDown();
 				gameBoard.update();
 				repaint();
 			}
-			else
-			{
-				timer.stop();
-			}
-
 		}
+
 		public void start()
 		{
 			if(gameBoard.getGameOver()) // Start over the game
@@ -278,7 +271,7 @@ public class TetrisPanel extends JPanel
 			g.fillRect(x + 1, y - SIZE+1, SIZE-3, SIZE-3);
 		}
 
-
+		//Function to draw message 
 		public void drawMessage(Graphics2D g2d, String s)
 		{
 			int widthR = 100, heightR = 30;
@@ -289,16 +282,14 @@ public class TetrisPanel extends JPanel
 			FontMetrics fm = g2d.getFontMetrics();
 			g2d.setColor(new Color(0,0,0, 140));
 			g2d.drawString(s,x + (width-fm.stringWidth(s))/2, y - height + 40);
-
 		}
 
+		//Function creates erasing effect for line's that was erased
 		public void eraseEffect(Graphics2D g2d)
 		{
 			int[] lines, arr;
 			Color squareColor;
 			int k;
-			System.out.println("running? "+running);
-			System.out.println("Starting erase effect");
 			lines = gameBoard.getErasedLines();
 			for(k =0; k< 25; k++)
 			{
@@ -330,8 +321,6 @@ public class TetrisPanel extends JPanel
 					gameBoard.eraseLine(lines[i]);
 				}
 			}
-			System.out.println("finishing erase effect");
-
 		}
 
 

@@ -18,7 +18,7 @@ public class Shape
 		this.counter = 0; //rotation counter
 		defineShape(n); // create shape
 	}
-	
+
 	public Shape(Shape p)
 	{
 		this.counter = p.counter; //rotation counter
@@ -28,7 +28,7 @@ public class Shape
 		for(int i=0; i<p.width; i++)
 			for(int j=0; j<p.height; j++)
 				this.shape[i][j] = p.getShape()[i][j];
-	
+
 	}
 	//Shape definition described by matrix (2D array) with the number that representing the color
 	private void defineShape(int n)
@@ -119,7 +119,7 @@ public class Shape
 		temp = width;
 		this.width = height;; 
 		this.height = temp;
-		
+
 		for(j=0;j<height-1;j++)    //mirroring array(to set it right direction) 
 		{		
 			for(i=0;i<width;i++)
@@ -130,7 +130,7 @@ public class Shape
 			}
 		}
 	}
-	
+
 	//Function to rotate shape depends on shape type
 	public void rotate(int n)
 	{
@@ -162,7 +162,7 @@ public class Shape
 			}
 		}
 	}
-	
+
 	//--------- Getters and Setters -----------------
 	public int[][] getShape() 
 	{
@@ -186,5 +186,5 @@ public class Shape
 	{
 		return counter;
 	}
-	
+
 }

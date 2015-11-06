@@ -14,11 +14,11 @@ public class Board
 	public Board(int cols, int rows)
 	{
 		this.cols = cols;
-		this.rows = rows+4;
+		this.rows = rows + 4;
 		this.randomGenerator = new Random(); //To create random shape
 		this.board = new int[this.cols][this.rows]; // board representing game board
-		this.level = 1;
-		this.gameOver = false;
+		this.level = 1; // Start level
+		this.gameOver = false; 
 		this.wasErase = false;
 		this.levelUp = false;
 	}
@@ -51,6 +51,7 @@ public class Board
 		oldY = y;
 	}
 
+	//Each move board need to be updated 
 	public void update()
 	{
 		int i;
@@ -106,7 +107,7 @@ public class Board
 		}
 	}
 
-
+	//Function that checking if the move is possible - or creates some collision
 	private boolean checkPossibleMove(int curX, int curY)
 	{
 		boolean possibleMove = true, a, b;
@@ -136,7 +137,8 @@ public class Board
 		return possibleMove;
 	}
 
-	public boolean copyShape(int curX, int curY, boolean color)
+	//This function allows to copy shape to new location - that given as parameters [x,y]
+	private boolean copyShape(int curX, int curY, boolean color)
 	{
 		int i, j, newX, newY;
 		boolean possibleMove = true;
@@ -211,6 +213,7 @@ public class Board
 
 	}
 
+	//Function locate all filled lines that should be erased and save them in array erasedLines[4] (max lines can be erased each time is 4)
 	private void findFullLines()
 	{
 		boolean full = true;
@@ -233,6 +236,7 @@ public class Board
 		}
 	}
 
+	//This function allows to erase specific line from the board and reorganize the board
 	public void eraseLine(int lineNum)
 	{
 		int i, j;
@@ -255,12 +259,14 @@ public class Board
 		}
 	}
 
+	//Update scores if lines was erased, depends on strikes too
 	private void updateScore(int linesCounter)
 	{
 		if(linesCounter != -1)
 			score += (Math.pow(2,linesCounter)*100)+level*strike*50; 
 	}
 
+	//Update level depends on scores
 	private void updateLevel()
 	{
 		if(score > Math.pow(2, (level-1))*1000)
